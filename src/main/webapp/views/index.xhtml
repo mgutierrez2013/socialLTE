@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                template="./../template1.xhtml"> 
+    
+    
+    <ui:define name="title">
+        <h:outputText value="Mi titulo"></h:outputText>
+    </ui:define>
+
+    <ui:define name="encabezado">
+        <h:outputText value="Pagina Contenido 1"></h:outputText>
+    </ui:define>
+
+    <ui:define name="contenido">
+            <h:form id="PaginasListForm">
+                <p:growl id="growl" showDetail="true" sticky="true" /> 
+                <p:panel header="#{bundle.sentimenttitle}">
+                    <p:dataTable id="datalist" value="#{reporteController.items}" var="item"
+                                 selection="#{reporteController.selectedPages}"
+                                 paginator="true"
+                                 rowKey="#{item.id}"
+                                 rows="10"
+                                 rowsPerPageTemplate="10,20,30,40,50"
+                                 emptyMessage="No se encontraron registros"
+                                 >
+                        
+                        <f:facet name="header">
+                            <p:outputPanel>
+                                <p:outputLabel for="dateini" value="#{bundle.ListPostsTitle_fechaIni}" />
+                                <p:inputMask id="dateini" value="#{reporteController.fechaIniReporte}" mask="99-99-9999"/>
+                                <p:outputLabel for="datefin" value="#{bundle.ListPostsTitle_fechaFin}" />
+                                <p:inputMask id="datefin" value="#{reporteController.fechaFinReporte}" mask="99-99-9999"/>
+                                <p:commandButton id="searchButton"   icon="ui-icon-search" value="#{bundle.ListPostsTitle_search}" update=":PostListForm, :PaginasListForm"  actionListener="#{reporteController.obtenerAnalisisSentimiento}"/>                          
+                            </p:outputPanel>
+                        </f:facet>
+
+                        <p:ajax event="rowSelect"   update="cleanPostButton"/>
+                        <p:ajax event="rowUnselect" update="cleanPostButton"/>
+
+                        <p:column selectionMode="multiple" style="width:16px;text-align:center" />
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListPaginasTitle_nombrePagina}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.nombrePagina}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListPaginasTitle_linkPagina}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.linkPagina}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListPaginasTitle_idRedSocial}"/>
+                            </f:facet>
+                            <h:outputText value="#{reporteController.obtenerNombreRedSocial(item.idRedSocial)}"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton id="reloadButton"   icon="ui-icon-refresh" value="#{bundle.reload}" update=":PostListForm :PaginasListForm"  actionListener="#{reporteController.recargarPaginas}"/>
+
+                            <p:commandButton id="cleanPostButton"   icon="ui-icon-trash" value="#{bundle.CleanListPostsTitle}" update=":PostListForm"  disabled="#{empty reporteController.selectedPages}" actionListener="#{reporteController.limpiarReportPost}"/>
+                            </f:facet>
+                    </p:dataTable>
+                </p:panel>
+                <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+                    <!--
+                    <f:facet name="default">
+                        <h:outputText value="Status: StandBy" />
+                    </f:facet>
+                    -->
+                    <f:facet name="start">
+                        <p:graphicImage name="images/ajaxloadingbar.gif" />
+                    </f:facet>
+                    <!--
+                    <f:facet name="complete">
+                        <h:outputText value="Status: Completed" />
+                    </f:facet>
+                    -->
+                </p:ajaxStatus>
+
+                <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+                <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                    <p:graphicImage name="images/ajaxloadingbar.gif" />
+                </p:dialog>
+            </h:form>
+            <br></br>
+            <br></br>
+            <h:form id="PostListForm">
+                <p:panel header="#{bundle.sentimenttitle}" rendered="#{!(reporteController.itemsComentarios == null)}">
+                    <p:dataTable id="dataPostList" value="#{reporteController.itemsComentarios}" var="comentarios"
+                                 
+                                 paginator="false"
+                                 rowKey="#{comentarios.id}"
+                                 rowsPerPageTemplate="10,20,30,40,50"
+                                 emptyMessage="No se encontraron registros"
+                                 >
+
+                        <f:facet name="header">
+                            <p:outputPanel>
+                                <h:commandLink>
+                                   <p:graphicImage name="images/excel-ico.png" />
+                                   <p:dataExporter type="xls" target="dataPostList" fileName="Reporte Sentimiento" pageOnly="true"/>
+                                </h:commandLink>                            
+                            </p:outputPanel>
+                        </f:facet>                        
+                        
+                        <p:column style="width: 40px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentableid}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.id}"/>
+                        </p:column>
+                        
+                        <p:column style="width: 150px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablelinkpost}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.linkPost}"/>
+                        </p:column>
+                        
+                        <p:column style="width: 60px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablepagina}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.pagina}"/>
+                        </p:column>
+                        <p:column style="width: 40px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentableautor}"/>
+                            </f:facet>
+                            <h:outputText value="#{(comentarios.autor.equals('true')?'SI':'NO')}"/>
+                        </p:column>
+                        <p:column style="width: 300px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablecomentario}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.comentario}"/>
+                        </p:column>
+                        <p:column style="width: 100px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentableusuario}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.usuarioComentaro}"/>
+                        </p:column>
+                        <p:column style="width: 40px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablelink}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.link}"/>
+                        </p:column>
+                        <p:column style="width: 60px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablerespuesta}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.respuesta}"/>
+                        </p:column>
+                        <p:column style="width: 40px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablepositivo}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.positivo}"/>
+                        </p:column>
+                        <p:column style="width: 40px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablenegativo}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.negativo}"/>
+                        </p:column>
+                        <p:column style="width: 40px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentableneutral}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.neutral}"/>
+                        </p:column>
+                        <p:column style="width: 60px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.sentimentablesentiment}"/>
+                            </f:facet>
+                            <h:outputText value="#{comentarios.sentiment}"/>
+                        </p:column>
+                        <!--
+                        <p:column style="width: 90px">
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ViewPostsLabel_fecha}"/>
+                            </f:facet>
+                            <h:outputText value="#{post.fecha}">
+                                <f:convertDateTime type="date" pattern="dd-MM-yyyy"/>
+                            </h:outputText>
+                        </p:column>
+                        -->
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+    </ui:define>
+
+</ui:composition>
